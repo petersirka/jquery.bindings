@@ -80,7 +80,7 @@ $('#form').bindings('model');
 
 #### $.bindings('send')(url, [options])
 
-> Send model via XHR as application/json.
+> Send a model via XHR as application/json.
 
 ```js
 $('#form').bindings('send')('/form/submit/');
@@ -94,7 +94,7 @@ $('#form').bindings('send')('/form/submit/', { type: 'PUT' });
 
 #### $.bindings.prepare(name, value, format, model)
 
-> Prepare current value from INPUT to MODEL. Always must return a value.
+> Prepare current value from an INPUT to a MODEL. Always must return a value.
 
 ```js
 $.bindings.prepare = function(name, value, format, model) {
@@ -108,7 +108,7 @@ $.bindings.prepare = function(name, value, format, model) {
 
 #### $.bindings.format(name, value, format, model)
 
-> Format current value from MODEL to HTML. Always must return a value.
+> Format current value from a MODEL to a HTML. Always must return a value.
 
 ```js
 $.bindings.format = function(name, value, format, model) {
