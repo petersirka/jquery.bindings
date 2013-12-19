@@ -124,7 +124,7 @@ $.bindings.format = function(name, value, format, model) {
 };
 ```
 
-#### $.bindings.format(name, value, format, model)
+#### $.bindings.element(name, value, format, model)
 
 > Format current value from MODEL to HTML. Always must return a value.
 

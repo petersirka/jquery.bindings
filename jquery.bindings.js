@@ -63,6 +63,7 @@ function bindings_create(model, template) {
 
 	bindings_refresh.call(self);
 	self.trigger('model-create', model);
+
 	return bindings_rebind.call(self);
 }
 
@@ -89,6 +90,9 @@ function bindings_set(path, value) {
 
 	if (typeof(model) === 'undefined')
 		return self;
+
+	if (!$.bindings._validation.call(self, name, value, model))
+		return;
 
 	if (bindings_setvalue(model, path, value))
 		bindings_rebind.call(self);
@@ -123,10 +127,11 @@ function bindings_rebind() {
 			default:
 				var name = el.attr('data-model');
 				var custom = el.attr('data-custom');
+				var value = bindings_getvalue(model, name);
 				if (typeof(custom) === 'undefined')
-					el.html($.bindings.format.call(el, name, model[name], el.attr('data-format'), model));
+					el.html($.bindings.format.call(el, name, value, el.attr('data-format'), model));
 				else
-					$.bindings.element.call(el, custom || '', name, model[name], model);
+					$.bindings.element.call(el, custom || '', name, value, model);
 				return;
 		}
 	});
@@ -155,20 +160,25 @@ function bindings_refresh() {
 		if (type === 'checkbox')
 			value = this.checked;
 
-		self.data('model')[name] = $.bindings.prepare.call(el, name, value, el.attr('data-prepare'));
+		var value_new = $.bindings.prepare.call(el, name, value, el.attr('data-prepare'), model);
+
+		if (!$.bindings._validation.call(el, name, value, model))
+			return;
+
+		bindings_setvalue.call(el, model, name, value_new);
 
 		if (type !== 'checkbox' && type !== 'radio') {
 			switch (this.tagName.toLowerCase()) {
 				case 'input':
 				case 'textarea':
-					this.value = $.bindings.format.call(el, name, value, el.attr('data-format'), self.data('model'));
+					this.value = $.bindings.format.call(el, name, value_new, el.attr('data-format'), self.data('model'));
 					break;
 			}
 		} else
 			this.checked = value;
 
 		bindings_rebind.call(self);
-		self.trigger('model-change', name, value, model);
+		self.trigger('model-change', name, value_new, model);
 	});
 
 	self.find('[data-model]').each(function() {
@@ -186,7 +196,9 @@ function bindings_refresh() {
 				break;
 		}
 
-		var value = model[name];
+		var value = bindings_getvalue(model, name);
+		var format = el.attr('data-format');
+		var value_new = $.bindings.format.call(self, name, value, format, model);
 
 		if (typeof(value) === 'undefined')
 			value = el.attr('data-default');
@@ -201,12 +213,10 @@ function bindings_refresh() {
 				else
 					return;
 			} else
-				el.val(value);
-
-			self.trigger('model-change', name, value, model);
+				el.val(value_new);
 		}
 		else
-			el.html(value);
+			el.html(value_new);
 	});
 
 	return self;
@@ -272,6 +282,14 @@ $.bindings.prepare = function(name, value, format, model) {
 	if (typeof(value) !== 'string')
 		return value;
 
+	if (bindings_getvalue(model, name) instanceof Array) {
+		var arr = value.split(',');
+		var length = arr.length;
+		for (var i = 0; i < length; i++)
+			arr[i] = $.trim(arr[i]);
+		return arr;
+	}
+
 	if (!value.isNumber())
 		return value;
 
@@ -283,20 +301,36 @@ $.bindings.prepare = function(name, value, format, model) {
 };
 
 $.bindings.format = function(name, value, format, model) {
+
+	if (value instanceof Array)
+		return value.join(', ');
+
 	return value;
 };
 
 $.bindings.element = function(name, value, model) {};
 
+$.bindings.validation = function(name, value, model) {
+	return true;
+};
+
+$.bindings._validation = function(name, value, model) {
+	var r = $.bindings.validation(name, value, model);
+	if (typeof(r) === 'undefined' || r === null)
+		return true;
+	return r === true;
+};
+
 function bindings_setvalue(obj, path, value) {
 	path = path.split('.');
 	var length = path.length;
 	var current = obj;
-	for (var i = 0; i < path.length; i++) {
+	for (var i = 0; i < length - 1; i++) {
 		if (typeof(current[path[i]]) === 'undefined')
 			return false;
-		current[path[i]] = value;
+		current = current[path[i]];
 	}
+	current[path[length - 1]] = value;
 	return true;
 }
 
