@@ -139,11 +139,11 @@ $.bindings.element = function(name, value, model) {
 ```js
 
 $('#form').on('model-create', function(e, model) {
-	// create a bindings
+	// create bindings
 });
 
 $('#form').on('model-update', function(e, model, path) {
-	// update a model
+	// update a model in bindings
 });
 
 $('#form').on('model-change', function(e, name, value, model) {
@@ -151,10 +151,6 @@ $('#form').on('model-change', function(e, name, value, model) {
 });
 
 $('#form').on('model-destroy', function(e) {
-	// destroy bindings
-});
-
-$('#form').on('model-default', function(e, model) {
 	// destroy bindings
 });
 
