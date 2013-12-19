@@ -13,6 +13,10 @@ $.fn.bindings = function(type) {
 	switch (type) {
 		case 'create':
 			return (function(model, template) { return bindings_create.call(self, model, template); });
+		case 'json':
+			return (function(query, template) { return bindings_json.call(self, query, template); });
+		case 'download':
+			return (function(url, template, options) { return bindings_download.call(self, url, template, options); });
 		case 'refresh':
 			bindings_refresh.call(self);
 			return;
@@ -65,6 +69,65 @@ function bindings_create(model, template) {
 	self.trigger('model-create', model);
 
 	return bindings_rebind.call(self);
+}
+
+function bindings_json(query, template) {
+
+	var el = this;
+	var q = $(query);
+	var tag = q.get(0).tagName.toLowerCase();
+
+	switch (tag) {
+		case 'input':
+		case 'select':
+		case 'textarea':
+			bindings_create.call(el, $.parseJSON(q.val()), template);
+			return;
+	}
+
+	bindings_create.call(el, $.parseJSON(q.html()), template);
+	return el;
+}
+
+function bindings_download(url, template, options) {
+
+	var self = this;
+
+	if (typeof(template) === 'object') {
+		var tmp = options;
+		options = template;
+		template = options;
+	}
+
+	if (!options)
+		options = {};
+
+	if (!options.type)
+		options.type = 'GET';
+
+	if (!options.dataType)
+		options.dataType = 'json';
+
+	var key = url + JSON.stringify(options);
+	if (jquerybindings_cache[key])
+		return;
+
+	self.trigger('model-download-begin', url);
+
+	options.success = function(data) {
+		self.trigger('model-download-end', url, data);
+		delete jqueryforms_cache[key];
+		bindings_create.call(self, data, template);
+	};
+
+	options.error = function(xhr, status) {
+		self.trigger('model-download-end', url);
+		delete jqueryforms_cache[key];
+		self.trigger('model-download-error', status, url);
+	};
+
+	$.ajax(url, options);
+	return self;
 }
 
 function bindings_destroy() {

@@ -16,6 +16,42 @@ $('#form').bindings('create')({ firstname: 'Peter', lastname: 'Širka' }, '<inpu
 $('#form').bindings('create')({ firstname: 'Peter', lastname: 'Širka' }, '#template-selector');
 ```
 
+#### $.bindings('download')(url, [template]);
+
+> Create bindings.
+
+```js
+$('#form').bindings('download')('/model.json');
+
+// or
+
+$('#form').bindings('download')('/model.json', '<input type="text" data-model="firstname" /><span>your firstname: <b data-model="first-name"></b></span>');
+
+// or
+
+$('#form').bindings('download')('/model.json', '#template-selector');
+```
+
+#### $.bindings('json')(query, [template]);
+
+> Create bindings.
+
+```html
+<script type="text/plain" id="model-selector">{"firstname":"Peter","lastname":"Širka"}</script>
+```
+
+```js
+$('#form').bindings('json')('#model-selector');
+
+// or
+
+$('#form').bindings('json')('#model-selector', '<input type="text" data-model="firstname" /><span>your firstname: <b data-model="first-name"></b></span>');
+
+// or
+
+$('#form').bindings('json')('#model-selector', '#template-selector');
+```
+
 #### $.bindings('destroy');
 
 > Destroy bindings.
@@ -150,6 +186,22 @@ $.bindings.element = function(custom, name, value, model) {
 };
 ```
 
+#### $.bindings.validation(name, value, model)
+
+> Validate current value to MODEL. Always must return Boolean.
+
+```js
+$.bindings.validation = function(name, value, model) {
+
+	switch (name) {
+		case 'age':
+			return value > 17 && value < 50;
+	}
+
+	return true;
+};
+```
+
 ## Events
 
 ```js
@@ -183,7 +235,7 @@ $('#form').on('model-send-end', function(e, url, model) {
 	// IMPORTANT: always is executed
 });
 
-$('#form').on('model-send-error', function(e, url, model) {
+$('#form').on('model-send-error', function(e, status, url, model) {
 	// error
 });
 
@@ -193,6 +245,19 @@ $('#form').on('model-send-no', function(e, data, model) {
 
 $('#form').on('model-send-ok', function(e, data, model) {
 	// Response ata is an Object
+});
+
+$('#form').on('model-download-begin', function(e, url) {
+	// begin downloading JSON model
+});
+
+$('#form').on('model-download-end', function(e, url, data) {
+	// end downloading JSON model
+	// IMPORTANT: always is executed
+});
+
+$('#form').on('model-download-error', function(e, status, url) {
+	// error
 });
 
 ```
