@@ -110,12 +110,16 @@ $.bindings.prepare = function(name, value, format, model) {
 
 > Format current value from a MODEL to a HTML. Always must return a value.
 
+```html
+<div data-model="age" data-format="years old"></div>
+```
+
 ```js
 $.bindings.format = function(name, value, format, model) {
 	// EXAMPLE:
 	// this === current element with data-model attribute
 	if (name === 'age')
-		return value + ' years old';
+		return value + ' ' + format;
 	return value;
 };
 ```
@@ -123,6 +127,10 @@ $.bindings.format = function(name, value, format, model) {
 #### $.bindings.format(name, value, format, model)
 
 > Format current value from MODEL to HTML. Always must return a value.
+
+```html
+<div data-model="age" data-custom></div>
+```
 
 ```js
 $.bindings.element = function(name, value, model) {
