@@ -42,6 +42,14 @@ $('#form').bindings('set')('firstname', 'Janko');
 // or
 
 $('#form').bindings('set')('user.firstname', 'Janko');
+
+// or
+
+$('#form').bindings('set')('tags', function(value) {
+	value.push('new-tag');
+	return value;
+});
+
 ```
 
 #### $.bindings('get')(path);

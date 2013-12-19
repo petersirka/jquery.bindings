@@ -91,6 +91,9 @@ function bindings_set(path, value) {
 	if (typeof(model) === 'undefined')
 		return self;
 
+	if (typeof(value) === 'function')
+		value = value(bindings_getvalue(model, path));
+
 	if (!$.bindings._validation.call(self, name, value, model))
 		return;
 
