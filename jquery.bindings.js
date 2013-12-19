@@ -126,7 +126,7 @@ function bindings_rebind() {
 				if (typeof(custom) === 'undefined')
 					el.html($.bindings.format.call(el, name, model[name], el.attr('data-format'), model));
 				else
-					$.bindings.element.call(el, name, model[name]);
+					$.bindings.element.call(el, custom || '', name, model[name], model);
 				return;
 		}
 	});

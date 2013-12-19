@@ -129,14 +129,14 @@ $.bindings.format = function(name, value, format, model) {
 > Format current value from MODEL to HTML. Always must return a value.
 
 ```html
-<div data-model="age" data-custom></div>
+<div data-model="age" data-custom="custom-value"></div>
 ```
 
 ```js
-$.bindings.element = function(name, value, model) {
+$.bindings.element = function(custom, name, value, model) {
 	// EXAMPLE:
 	// this === current element with data-model and data-custom attribute
-	if (name === 'age')
+	if (name === 'age' || custom === 'custom-value')
 		return value + ' years old';
 	return value;
 };
