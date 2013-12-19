@@ -1,5 +1,6 @@
 // <element data-model="property" data-default="1" data-format="dd.MM.yyyy" data-prepare="#####.##" />
 var jquerybindings_cache = {};
+
 $.bindings = {};
 
 $.fn.bindings = function(type) {
@@ -21,6 +22,10 @@ $.fn.bindings = function(type) {
 		case 'default':
 			bindings_default.call(self);
 			return;
+		case 'set':
+			return (function(path, value) { return bindings_set.call(self, path, value); });
+		case 'get':
+			return (function(path) { return bindings_get.call(self, path); });
 		case 'update':
 			return (function(model) { return bindings_create.call(self, model); });
 		case 'model':
@@ -42,6 +47,7 @@ function bindings_create(model, template) {
 	if (typeof(self.data('model')) !== 'undefined') {
 		self.data('model', model);
 		bindings_refresh.call(self);
+		self.trigger('model-update', model);
 		return self;
 	}
 
@@ -49,13 +55,14 @@ function bindings_create(model, template) {
 	self.data('model', model);
 
 	if (typeof(template) !== 'undefined') {
-		if (template.indexOf('<') === -1)
+		if (template.indexOf('>') !== -1 && template.indexOf('<') !== -1)
+			self.html(template);
+		else
 			template = $(template).html();
-		self.html(template);
 	}
 
 	bindings_refresh.call(self);
-	self.trigger('model-create');
+	self.trigger('model-create', model);
 	return bindings_rebind.call(self);
 }
 
@@ -69,10 +76,33 @@ function bindings_destroy() {
 
 function bindings_default() {
 	var self = this;
-	self.data('model', self.data('default'));
+	var model = self.data('default');
+	self.data('model', model);
 	bindings_refresh.call(self);
-	self.trigger('model-default');
+	self.trigger('model-default', model);
 	return self;
+}
+
+function bindings_set(path, value) {
+	var self = this;
+	var model = self.data('model');
+
+	if (typeof(model) === 'undefined')
+		return self;
+
+	if (bindings_setvalue(model, path, value))
+		bindings_rebind.call(self);
+
+	self.trigger('model-update', model, path);
+	return self;
+}
+
+function bindings_get(path) {
+	var self = this;
+	var model = self.data('model');
+	if (typeof(model) === 'undefined')
+		return;
+	return bindings_getvalue(model, path);
 }
 
 function bindings_rebind() {
@@ -92,10 +122,16 @@ function bindings_rebind() {
 				return;
 			default:
 				var name = el.attr('data-model');
-				el.html($.bindings.format.call(el, name, model[name], el.attr('data-format'), model));
+				var custom = el.attr('data-custom');
+				if (typeof(custom) === 'undefined')
+					el.html($.bindings.format.call(el, name, model[name], el.attr('data-format'), model));
+				else
+					$.bindings.element.call(el, name, model[name]);
 				return;
 		}
 	});
+
+	return self;
 }
 
 function bindings_refresh() {
@@ -132,7 +168,7 @@ function bindings_refresh() {
 			this.checked = value;
 
 		bindings_rebind.call(self);
-		self.trigger('model-update', name, value, model, false);
+		self.trigger('model-change', name, value, model);
 	});
 
 	self.find('[data-model]').each(function() {
@@ -167,11 +203,13 @@ function bindings_refresh() {
 			} else
 				el.val(value);
 
-			self.trigger('model-update', name, value, model, true);
+			self.trigger('model-change', name, value, model);
 		}
 		else
 			el.html(value);
 	});
+
+	return self;
 }
 
 function bindings_send(url, options) {
@@ -205,27 +243,28 @@ function bindings_send(url, options) {
 	if (jquerybindings_cache[key])
 		return;
 
-	self.trigger('loading', true, url);
+	self.trigger('model-send-begin', url, model);
 
 	options.contentType = 'application/json';
 	options.data = JSON.stringify(model);
 
 	options.success = function(data) {
-		self.trigger('loading', false, url);
+		self.trigger('model-send-end', url, model);
 		delete jqueryforms_cache[key];
 		if (data instanceof Array)
-			self.trigger('no', data);
+			self.trigger('model-send-no', data, model);
 		else
-			self.trigger('ok', data);
+			self.trigger('model-send-ok', data, model);
 	};
 
 	options.error = function(xhr, status) {
-		self.trigger('loading', false, url);
+		self.trigger('model-send-end', url, model);
 		delete jqueryforms_cache[key];
-		self.trigger('error', status);
+		self.trigger('model-send-error', status, url, model);
 	};
 
 	$.ajax(url, options);
+	return self;
 }
 
 $.bindings.prepare = function(name, value, format, model) {
@@ -246,6 +285,32 @@ $.bindings.prepare = function(name, value, format, model) {
 $.bindings.format = function(name, value, format, model) {
 	return value;
 };
+
+$.bindings.element = function(name, value, model) {};
+
+function bindings_setvalue(obj, path, value) {
+	path = path.split('.');
+	var length = path.length;
+	var current = obj;
+	for (var i = 0; i < path.length; i++) {
+		if (typeof(current[path[i]]) === 'undefined')
+			return false;
+		current[path[i]] = value;
+	}
+	return true;
+}
+
+function bindings_getvalue(obj, path) {
+	path = path.split('.');
+	var length = path.length;
+	var current = obj;
+	for (var i = 0; i < path.length; i++) {
+		if (typeof(current[path[i]]) === 'undefined')
+			return;
+		current = current[path[i]];
+	}
+	return current;
+}
 
 if (!String.prototype.isNumber) {
 	String.prototype.isNumber = function(isDecimal) {
