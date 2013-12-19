@@ -162,7 +162,7 @@ function bindings_refresh() {
 
 		var value_new = $.bindings.prepare.call(el, name, value, el.attr('data-prepare'), model);
 
-		if (!$.bindings._validation.call(el, name, value, model))
+		if (!$.bindings._validation.call(el, name, value_new, model))
 			return;
 
 		bindings_setvalue.call(el, model, name, value_new);
@@ -315,7 +315,7 @@ $.bindings.validation = function(name, value, model) {
 };
 
 $.bindings._validation = function(name, value, model) {
-	var r = $.bindings.validation(name, value, model);
+	var r = $.bindings.validation.call(this, name, value, model);
 	if (typeof(r) === 'undefined' || r === null)
 		return true;
 	return r === true;
