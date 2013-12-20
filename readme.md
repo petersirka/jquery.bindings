@@ -93,7 +93,6 @@ $('#form').bindings('set')('tags', function(value) {
 	value.push('new-tag');
 	return value;
 });
-
 ```
 
 #### $.bindings('get')(path);
@@ -224,7 +223,6 @@ $.bindings.watch = function(isValid, path, value, model) {
 ## Events
 
 ```js
-
 $('#form').on('model-create', function(e, model) {
 	// create bindings
 });
@@ -284,5 +282,4 @@ $('#form').on('model-download-end', function(e, url, data) {
 $('#form').on('model-download-error', function(e, status, url) {
 	// error
 });
-
 ```
