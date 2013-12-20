@@ -1,4 +1,3 @@
-// <element data-model="property" data-default="1" data-format="dd.MM.yyyy" data-prepare="#####.##" />
 var jquerybindings_cache = {};
 
 $.bindings = {};
@@ -25,6 +24,9 @@ $.fn.bindings = function(type) {
 			return;
 		case 'default':
 			bindings_default.call(self);
+			return;
+		case 'validate':
+			bindings_validate.call(self);
 			return;
 		case 'set':
 			return (function(path, value) { return bindings_set.call(self, path, value); });
@@ -147,6 +149,22 @@ function bindings_default() {
 	return self;
 }
 
+function bindings_validate() {
+	var self = this;
+	var model = self.data('model');
+	var error = [];
+
+	bindings_reflection(model, function(path, value, key) {
+		var r = $.bindings._validation(path, value);
+		if (typeof(r) === 'undefined' || r === null || r)
+			return;
+		error.push({ path: path, value: value, element: $('input[data-model="' + path + '"],textarea[data-model="' + path + '"],select[data-model="' + path + '"]') });
+	});
+
+	self.trigger('model-validate');
+	return self;
+}
+
 function bindings_set(path, value) {
 	var self = this;
 	var model = self.data('model');
@@ -157,8 +175,10 @@ function bindings_set(path, value) {
 	if (typeof(value) === 'function')
 		value = value(bindings_getvalue(model, path));
 
-	if (!$.bindings._validation.call(self, name, value, model))
-		return;
+	var r = $.bindings._validation(path, value, model);
+	$.bindings.watch.call($('input[data-model="' + path + '"],textarea[data-model="' + path + '"],select[data-model="' + path + '"]'), r, path, value, model);
+	if (!r)
+		return self;
 
 	if (bindings_setvalue(model, path, value))
 		bindings_rebind.call(self);
@@ -216,19 +236,20 @@ function bindings_refresh() {
 
 	var elements = self.find('input[data-model],textarea[data-model],select[data-model]').unbind('change').bind('change', function(e) {
 		var el = $(this);
-		var name = el.attr('data-model') || '';
+		var name = el.attr('data-model');
 		var type = el.attr('type');
 		var value = el.val();
-
-		if (name.length === 0)
-			name = this.name;
 
 		if (type === 'checkbox')
 			value = this.checked;
 
 		var value_new = $.bindings.prepare.call(el, name, value, el.attr('data-prepare'), model);
 
-		if (!$.bindings._validation.call(el, name, value_new, model))
+		var r = $.bindings._validation.call(el, name, value_new, model);
+
+		$.bindings.watch.call(el, r, name, value_new, model);
+
+		if (!r)
 			return;
 
 		bindings_setvalue.call(el, model, name, value_new);
@@ -257,8 +278,6 @@ function bindings_refresh() {
 			case 'textarea':
 			case 'select':
 				isIO = true;
-				if (name.length === 0)
-					name = this.name;
 				break;
 		}
 
@@ -343,12 +362,12 @@ function bindings_send(url, options) {
 	return self;
 }
 
-$.bindings.prepare = function(name, value, format, model) {
+$.bindings.prepare = function(path, value, format, model) {
 
 	if (typeof(value) !== 'string')
 		return value;
 
-	if (bindings_getvalue(model, name) instanceof Array) {
+	if (bindings_getvalue(model, path) instanceof Array) {
 		var arr = value.split(',');
 		var length = arr.length;
 		for (var i = 0; i < length; i++)
@@ -366,24 +385,23 @@ $.bindings.prepare = function(name, value, format, model) {
 	return parseFloat(value);
 };
 
-$.bindings.format = function(name, value, format, model) {
-
+$.bindings.format = function(path, value, format, model) {
 	if (value instanceof Array)
 		return value.join(', ');
-
 	return value;
 };
 
-$.bindings.element = function(name, value, model) {};
+$.bindings.element = function(path, value, model) {};
+$.bindings.watch = function(isValid, path, value, model) {};
 
-$.bindings.validation = function(name, value, model) {
+$.bindings.validation = function(path, value, model) {
 	return true;
 };
 
-$.bindings._validation = function(name, value, model) {
-	var r = $.bindings.validation.call(this, name, value, model);
+$.bindings._validation = function(path, value, model) {
+	var r = $.bindings.validation(path, value, model);
 	if (typeof(r) === 'undefined' || r === null)
-		return true;
+		r = true;
 	return r === true;
 };
 
@@ -439,4 +457,24 @@ if (!String.prototype.isNumber) {
 
 		return true;
 	};
+}
+
+function bindings_reflection(obj, fn, path) {
+	path = path || '';
+	for (var k in obj) {
+
+		if (typeof(k) !== 'string')
+			continue;
+
+		var current = path + (path !== '' ? '.' : '') + k;
+		var type = typeof(obj[k]);
+
+		if (type === 'function')
+			continue;
+
+		fn(current, obj[k], k);
+
+		if (type === 'object')
+			bindings_reflection(obj[k], fn, current);
+	}
 }

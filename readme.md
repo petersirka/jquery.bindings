@@ -68,6 +68,14 @@ $('#form').bindings('destroy');
 $('#form').bindings('default');
 ```
 
+#### $.bindings('validate');
+
+> Validate a model.
+
+```js
+$('#form').bindings('validate');
+```
+
 #### $.bindings('set')(path, value);
 
 > Rewrite an existing value.
@@ -136,21 +144,21 @@ $('#form').bindings('send')('/form/submit/', { type: 'PUT' });
 
 ## Delegates
 
-#### $.bindings.prepare(name, value, format, model)
+#### $.bindings.prepare(path, value, format, model)
 
 > Prepare current value from an INPUT to a MODEL. Always must return a value.
 
 ```js
-$.bindings.prepare = function(name, value, format, model) {
+$.bindings.prepare = function(path, value, format, model) {
 	// EXAMPLE:
 	// this === current element with data-model attribute
-	if (name === 'age')
+	if (path === 'age')
 		return parseInt(value);
 	return value;
 };
 ```
 
-#### $.bindings.format(name, value, format, model)
+#### $.bindings.format(path, value, format, model)
 
 > Format current value from a MODEL to a HTML. Always must return a value.
 
@@ -159,16 +167,16 @@ $.bindings.prepare = function(name, value, format, model) {
 ```
 
 ```js
-$.bindings.format = function(name, value, format, model) {
+$.bindings.format = function(path, value, format, model) {
 	// EXAMPLE:
 	// this === current element with data-model attribute
-	if (name === 'age')
+	if (path === 'age')
 		return value + ' ' + format;
 	return value;
 };
 ```
 
-#### $.bindings.element(name, value, format, model)
+#### $.bindings.element(path, value, format, model)
 
 > Format current value from MODEL to HTML. Always must return a value.
 
@@ -177,28 +185,39 @@ $.bindings.format = function(name, value, format, model) {
 ```
 
 ```js
-$.bindings.element = function(custom, name, value, model) {
+$.bindings.element = function(custom, path, value, model) {
 	// EXAMPLE:
 	// this === current element with data-model and data-custom attribute
-	if (name === 'age' || custom === 'custom-value')
+	if (path === 'age' || custom === 'custom-value')
 		return value + ' years old';
 	return value;
 };
 ```
 
-#### $.bindings.validation(name, value, model)
+#### $.bindings.validation(path, value, model)
 
 > Validate current value to MODEL. Always must return Boolean.
 
 ```js
-$.bindings.validation = function(name, value, model) {
+$.bindings.validation = function(path, value, model) {
 
-	switch (name) {
+	switch (path) {
 		case 'age':
 			return value > 17 && value < 50;
 	}
 
 	return true;
+};
+```
+
+#### $.bindings.watch(isValid, path, value, model)
+
+> Watch an element.
+
+```js
+$.bindings.watch = function(isValid, path, value, model) {
+	var el = this;
+	el.toggleClass('error', isValid);
 };
 ```
 
@@ -214,7 +233,7 @@ $('#form').on('model-update', function(e, model, path) {
 	// update a model in bindings
 });
 
-$('#form').on('model-change', function(e, name, value, model) {
+$('#form').on('model-change', function(e, path, value, model) {
 	// change a value in the model
 });
 
@@ -224,6 +243,12 @@ $('#form').on('model-destroy', function(e) {
 
 $('#form').on('model-default', function(e, model) {
 	// set a default model
+});
+
+$('#form').on('model-validate', function(e, errorlist) {
+	errorlist[0].path;
+	errorlist[0].value;
+	errorlist[0].element;
 });
 
 $('#form').on('model-send-begin', function(e, url, model) {
