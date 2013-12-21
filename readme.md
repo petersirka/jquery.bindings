@@ -1,5 +1,13 @@
 # jQuery two way bindings
 
+Simple jQuery two way bindings. This plugin joins HTML elements with a model and in reverse.
+
+__IMPORTANT:__
+
+- [partial.js - web application framework for node.js](https://github.com/petersirka/partial.js)
+- [partial.js client-side routing](https://github.com/petersirka/partial.js-clientside)
+- [jQuery templating engine according to partial.js](https://github.com/petersirka/jquery.templates)
+
 #### $.bindings('create')(model, [template]);
 
 > Create bindings.
