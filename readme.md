@@ -192,7 +192,7 @@ $.bindings.format = function(path, value, format, model) {
 ```
 
 ```js
-$.bindings.element = function(custom, path, value, model) {
+$.bindings.custom = function(custom, path, value, model) {
 	// EXAMPLE:
 	// this === current element with data-model and data-custom attribute
 	if (path === 'age' || custom === 'custom-value')
