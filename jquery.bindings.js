@@ -67,6 +67,41 @@ function bindings_create(model, template) {
 			template = $(template).html();
 	}
 
+	self.on('change', 'input[data-model],textarea[data-model],select[data-model]', function(e) {
+		
+		var el = $(this);
+		var name = el.attr('data-model');
+		var type = el.attr('type');
+		var value = el.val();
+
+		if (type === 'checkbox')
+			value = this.checked;
+
+		var value_new = $.bindings.prepare.call(el, name, value, el.attr('data-prepare'), model);
+
+		var r = $.bindings._validation.call(el, name, value_new, model);
+
+		$.bindings.watch.call(el, r, name, value_new, model);
+
+		if (!r)
+			return;
+
+		bindings_setvalue.call(el, model, name, value_new);
+
+		if (type !== 'checkbox' && type !== 'radio') {
+			switch (this.tagName.toLowerCase()) {
+				case 'input':
+				case 'textarea':
+					this.value = $.bindings.format.call(el, name, value_new, el.attr('data-format'), self.data('model'));
+					break;
+			}
+		} else
+			this.checked = value;
+
+		bindings_rebind.call(self);
+		self.trigger('model-change', name, value_new, model);
+	});
+
 	bindings_refresh.call(self);
 	self.trigger('model-create', model);
 
@@ -229,44 +264,11 @@ function bindings_refresh() {
 	var self = this;
 
 	var model = self.data('model');
+
 	if (typeof(model) === 'undefined') {
 		model = {};
 		self.data('model', model);
 	}
-
-	var elements = self.find('input[data-model],textarea[data-model],select[data-model]').unbind('change').bind('change', function(e) {
-		var el = $(this);
-		var name = el.attr('data-model');
-		var type = el.attr('type');
-		var value = el.val();
-
-		if (type === 'checkbox')
-			value = this.checked;
-
-		var value_new = $.bindings.prepare.call(el, name, value, el.attr('data-prepare'), model);
-
-		var r = $.bindings._validation.call(el, name, value_new, model);
-
-		$.bindings.watch.call(el, r, name, value_new, model);
-
-		if (!r)
-			return;
-
-		bindings_setvalue.call(el, model, name, value_new);
-
-		if (type !== 'checkbox' && type !== 'radio') {
-			switch (this.tagName.toLowerCase()) {
-				case 'input':
-				case 'textarea':
-					this.value = $.bindings.format.call(el, name, value_new, el.attr('data-format'), self.data('model'));
-					break;
-			}
-		} else
-			this.checked = value;
-
-		bindings_rebind.call(self);
-		self.trigger('model-change', name, value_new, model);
-	});
 
 	self.find('[data-model]').each(function() {
 		var el = $(this);
