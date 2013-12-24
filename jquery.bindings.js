@@ -153,13 +153,13 @@ function bindings_download(url, template, options) {
 
 	options.success = function(data) {
 		self.trigger('model-download-end', url, data);
-		delete jqueryforms_cache[key];
+		delete jquerybindings_cache[key];
 		bindings_create.call(self, data, template);
 	};
 
 	options.error = function(xhr, status) {
 		self.trigger('model-download-end', url);
-		delete jqueryforms_cache[key];
+		delete jquerybindings_cache[key];
 		self.trigger('model-download-error', status, url);
 	};
 
@@ -347,7 +347,7 @@ function bindings_send(url, options) {
 
 	options.success = function(data) {
 		self.trigger('model-send-end', url, model);
-		delete jqueryforms_cache[key];
+		delete jquerybindings_cache[key];
 		if (data instanceof Array)
 			self.trigger('model-send-no', data, model);
 		else
@@ -356,7 +356,7 @@ function bindings_send(url, options) {
 
 	options.error = function(xhr, status) {
 		self.trigger('model-send-end', url, model);
-		delete jqueryforms_cache[key];
+		delete jquerybindings_cache[key];
 		self.trigger('model-send-error', status, url, model);
 	};
 
