@@ -2,11 +2,17 @@
 
 Simple jQuery two way bindings. This plugin joins HTML elements with a model and in reverse.
 
-__IMPORTANT:__
+- easy to use
+- minified only 9 kB (without GZIP compression)
+- great functionality
+- great use
+- works in IE 7+
 
-- [partial.js - web application framework for node.js](https://github.com/petersirka/partial.js)
+__MUST SEE:__
+
 - [partial.js client-side routing](https://github.com/petersirka/partial.js-clientside)
 - [jQuery templating engine according to partial.js](https://github.com/petersirka/jquery.templates)
+- [web application framework for node.js - partial.js](https://github.com/petersirka/partial.js)
 
 #### $.bindings('create')(model, [template]);
 
