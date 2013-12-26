@@ -12,7 +12,7 @@ __MUST SEE:__
 
 - [partial.js client-side routing](https://github.com/petersirka/partial.js-clientside)
 - [jQuery templating engine according to partial.js](https://github.com/petersirka/jquery.templates)
-- [web application framework for node.js - partial.js](https://github.com/petersirka/partial.js)
+- [Web application framework for node.js - partial.js](https://github.com/petersirka/partial.js)
 
 #### $.bindings('create')(model, [template]);
 
@@ -189,9 +189,9 @@ $.bindings.format = function(path, value, format, model) {
 };
 ```
 
-#### $.bindings.element(path, value, format, model)
+#### $.bindings.custom(path, value, format, model)
 
-> Format current value from MODEL to HTML. Always must return a value.
+> Format current value from a MODEL to HTML. Always must return a value.
 
 ```html
 <div data-model="age" data-custom="custom-value"></div>
@@ -201,7 +201,7 @@ $.bindings.format = function(path, value, format, model) {
 $.bindings.custom = function(custom, path, value, model) {
 	// EXAMPLE:
 	// this === current element with data-model and data-custom attribute
-	if (path === 'age' || custom === 'custom-value')
+	if (path === 'age' && custom === 'custom-value')
 		return value + ' years old';
 	return value;
 };
