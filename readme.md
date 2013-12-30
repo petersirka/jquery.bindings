@@ -198,7 +198,7 @@ $.bindings.format = function(path, value, format, model) {
 ```
 
 ```js
-$.bindings.custom = function(custom, path, value, model) {
+$.bindings.custom = function(path, value, custom, model) {
 	// EXAMPLE:
 	// this === current element with data-model and data-custom attribute
 	if (path === 'age' && custom === 'custom-value')
@@ -238,11 +238,11 @@ $.bindings.watch = function(isValid, path, value, model) {
 
 ```js
 $('#form').on('model-create', function(e, model) {
-	// create bindings
+	// trigger after $().bindings('create')
 });
 
 $('#form').on('model-update', function(e, model, path) {
-	// update a model in bindings
+	// trigger after $().bindings('update')
 });
 
 $('#form').on('model-change', function(e, path, value, model) {

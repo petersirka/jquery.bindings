@@ -252,7 +252,7 @@ function bindings_rebind() {
 				if (typeof(custom) === 'undefined')
 					el.html($.bindings.format.call(el, name, value, el.attr('data-format'), model));
 				else
-					$.bindings.custom.call(el, custom || '', name, value, model);
+					$.bindings.custom.call(el, name, value, custom || '', model);
 				return;
 		}
 	});
@@ -393,7 +393,7 @@ $.bindings.format = function(path, value, format, model) {
 	return value;
 };
 
-$.bindings.custom = function(custom, path, value, model) {};
+$.bindings.custom = function(path, value, custom, model) {};
 $.bindings.watch = function(isValid, path, value, model) {};
 
 $.bindings.validation = function(path, value, model) {
