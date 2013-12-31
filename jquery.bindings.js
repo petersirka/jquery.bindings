@@ -69,15 +69,23 @@ function bindings_create(model, template, schema) {
 		return self;
 	}
 
-	self.data('default', $.extend({}, model));
-	self.data('model', model);
-
 	if (typeof(template) !== 'undefined') {
+		
+		if (template.substring(0, 1) === '/') {
+			$.get(template, {}, function(data) {
+				bindings_create.call(self, model, data);
+			});
+			return;
+		}
+
 		if (template.indexOf('>') !== -1 && template.indexOf('<') !== -1)
 			self.html(template);
 		else
 			template = $(template).html();
 	}
+
+	self.data('default', $.extend({}, model));
+	self.data('model', model);
 
 	self.on('change keydown', 'input[data-model]', function(e) {
 
