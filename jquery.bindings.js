@@ -267,7 +267,7 @@ function bindings_rebind(schema) {
 				}
 				var attr = el.attr('data-encode');
 				var isRaw = typeof(attr) !== 'undefined' && attr === 'false';
-				var val = $.bindings.format.call(el, name, value, el.attr('data-format'), model, schema);
+				var val = ($.bindings.format.call(el, name, value, el.attr('data-format'), model, schema) || '').toString();
 				el.html(isRaw ? val : val.encode());
 				return;
 		}
@@ -330,7 +330,7 @@ function bindings_refresh(schema) {
 
 		var attr = el.attr('data-encode');
 		var isRaw = typeof(attr) !== 'undefined' && attr === 'false';
-		var val = $.bindings.format.call(el, name, value, el.attr('data-format'), model, schema)
+		var val = ($.bindings.format.call(el, name, value, el.attr('data-format'), model, schema) || '').toString();
 		el.html(isRaw ? val : val.encode());
 	});
 
