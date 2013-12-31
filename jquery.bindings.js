@@ -72,7 +72,9 @@ function bindings_create(model, template, schema) {
 	if (typeof(template) !== 'undefined') {
 
 		if (template.substring(0, 1) === '/') {
+			self.trigger('template-download-begin', [template]);
 			$.get(template, {}, function(data) {
+				self.trigger('template-download-end', [template, data]);
 				bindings_create.call(self, model, data);
 			});
 			return;

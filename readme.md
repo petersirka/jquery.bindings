@@ -311,6 +311,14 @@ $('#form').on('model-download-end', function(e, url, data) {
 	// IMPORTANT: always is executed
 });
 
+$('#form').on('template-download-begin', function(e, url) {
+	// begin downloading template
+});
+
+$('#form').on('template-download-end', function(e, url, data) {
+	// end downloading template
+});
+
 $('#form').on('model-download-error', function(e, status, url) {
 	// error
 });
