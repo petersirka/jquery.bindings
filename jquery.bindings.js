@@ -9,51 +9,63 @@ $.fn.bindings = function(type) {
 	if (typeof(type) === 'undefined')
 		type = 'model';
 
+	var schema = self.attr('data-name');
+
 	switch (type) {
 		case 'create':
-			return (function(model, template) { return bindings_create.call(self, model, template); });
+			return (function(model, template) { return bindings_create.call(self, model, template, schema); });
 		case 'json':
-			return (function(query, template) { return bindings_json.call(self, query, template); });
+			return (function(query, template) { return bindings_json.call(self, query, template, schema); });
 		case 'download':
-			return (function(url, template, options) { return bindings_download.call(self, url, template, options); });
+			return (function(url, template, options) { return bindings_download.call(self, url, template, options, schema); });
 		case 'refresh':
-			bindings_refresh.call(self);
+			bindings_refresh.call(self, schema);
 			return;
 		case 'destroy':
-			bindings_destroy.call(self);
+			bindings_destroy.call(self, schema);
 			return;
 		case 'default':
-			bindings_default.call(self);
+			bindings_default.call(self, schema);
 			return;
 		case 'validate':
-			bindings_validate.call(self);
+			bindings_validate.call(self, schema);
 			return;
 		case 'set':
-			return (function(path, value) { return bindings_set.call(self, path, value); });
+			return (function(path, value) { return bindings_set.call(self, path, value, schema); });
 		case 'get':
-			return (function(path) { return bindings_get.call(self, path); });
+			return (function(path) { return bindings_get.call(self, path, schema); });
 		case 'update':
-			return (function(model) { return bindings_create.call(self, model); });
+			return (function(model) { return bindings_create.call(self, model, schema); });
 		case 'model':
-			return bindings_create.call(self);
+			return bindings_create.call(self, null, null, schema);
 		case 'send':
-			return (function(url, options) { return bindings_send.call(self, url, options); });
+			return (function(url, options) { return bindings_send.call(self, url, options, schema); });
 	}
 
 	return self;
 };
 
-function bindings_create(model, template) {
+function bindings_create(model, template, schema) {
 
 	var self = this;
 
-	if (typeof(model) === 'undefined')
-		return self.data('model');
+	if (typeof(model) === 'undefined' || model === null)
+		return $.extend({}, self.data('model'));
 
-	if (typeof(self.data('model')) !== 'undefined') {
-		self.data('model', model);
+	var tmp = self.data('model');
+
+	if (typeof(tmp) !== 'undefined') {
+
+		if (typeof(model) === 'function') {
+			tmp = model(tmp);
+			if (tmp)
+				self.data('model', tmp);
+		}
+		else
+			self.data('model', model);
+
 		bindings_refresh.call(self);
-		self.trigger('model-update', model);
+		self.trigger('model-update', [model, schema]);
 		return self;
 	}
 
@@ -68,7 +80,7 @@ function bindings_create(model, template) {
 	}
 
 	self.on('change', 'input[data-model],textarea[data-model],select[data-model]', function(e) {
-		
+
 		var el = $(this);
 		var name = el.attr('data-model');
 		var type = el.attr('type');
@@ -77,38 +89,38 @@ function bindings_create(model, template) {
 		if (type === 'checkbox')
 			value = this.checked;
 
-		var value_new = $.bindings.prepare.call(el, name, value, el.attr('data-prepare'), model);
+		var value_new = $.bindings.prepare.call(el, name, value, el.attr('data-prepare'), model, schema);
+		var r = $.bindings._validation.call(el, name, value_new, model, schema);
 
-		var r = $.bindings._validation.call(el, name, value_new, model);
-
-		$.bindings.watch.call(el, r, name, value_new, model);
+		$.bindings.watch.call(el, r, name, value_new, model, schema);
 
 		if (!r)
 			return;
 
-		bindings_setvalue.call(el, model, name, value_new);
+		bindings_setvalue.call(el, model, name, value_new, schema);
 
 		if (type !== 'checkbox' && type !== 'radio') {
 			switch (this.tagName.toLowerCase()) {
 				case 'input':
 				case 'textarea':
-					this.value = $.bindings.format.call(el, name, value_new, el.attr('data-format'), self.data('model'));
+					this.value = $.bindings.format.call(el, name, value_new, el.attr('data-format'), self.data('model'), schema);
 					break;
 			}
 		} else
 			this.checked = value;
 
 		bindings_rebind.call(self);
-		self.trigger('model-change', name, value_new, model);
+		self.trigger('model-change', [name, value_new, model, schema]);
+		self.trigger('model-update', [model, name, schema]);
 	});
 
 	bindings_refresh.call(self);
-	self.trigger('model-create', model);
+	self.trigger('model-create', [model, schema]);
 
 	return bindings_rebind.call(self);
 }
 
-function bindings_json(query, template) {
+function bindings_json(query, template, schema) {
 
 	var el = this;
 	var q = $(query);
@@ -118,15 +130,15 @@ function bindings_json(query, template) {
 		case 'input':
 		case 'select':
 		case 'textarea':
-			bindings_create.call(el, $.parseJSON(q.val()), template);
+			bindings_create.call(el, $.parseJSON(q.val()), template, schema);
 			return;
 	}
 
-	bindings_create.call(el, $.parseJSON(q.html()), template);
+	bindings_create.call(el, $.parseJSON(q.html()), template, schema);
 	return el;
 }
 
-function bindings_download(url, template, options) {
+function bindings_download(url, template, options, schema) {
 
 	var self = this;
 
@@ -149,18 +161,18 @@ function bindings_download(url, template, options) {
 	if (jquerybindings_cache[key])
 		return;
 
-	self.trigger('model-download-begin', url);
+	self.trigger('model-download-begin', [url]);
 
 	options.success = function(data) {
-		self.trigger('model-download-end', url, data);
+		self.trigger('model-download-end', [url, data, schema]);
 		delete jquerybindings_cache[key];
-		bindings_create.call(self, data, template);
+		bindings_create.call(self, data, template, schema);
 	};
 
 	options.error = function(xhr, status) {
-		self.trigger('model-download-end', url);
+		self.trigger('model-download-end', [url, schema]);
 		delete jquerybindings_cache[key];
-		self.trigger('model-download-error', status, url);
+		self.trigger('model-download-error', [status, url, schema]);
 	};
 
 	$.ajax(url, options);
@@ -171,7 +183,7 @@ function bindings_destroy() {
 	var self = this;
 	self.removeData('model');
 	self.find('input[data-model],textarea[data-model],select[data-model]').unbind('change');
-	self.trigger('model-destroy');
+	self.trigger('model-destroy', [schema]);
 	return self;
 }
 
@@ -180,11 +192,11 @@ function bindings_default() {
 	var model = self.data('default');
 	self.data('model', model);
 	bindings_refresh.call(self);
-	self.trigger('model-default', model);
+	self.trigger('model-default', [model, schema]);
 	return self;
 }
 
-function bindings_validate() {
+function bindings_validate(schema) {
 	var self = this;
 	var model = self.data('model');
 	var error = [];
@@ -196,11 +208,11 @@ function bindings_validate() {
 		error.push({ path: path, value: value, element: $('input[data-model="' + path + '"],textarea[data-model="' + path + '"],select[data-model="' + path + '"]') });
 	});
 
-	self.trigger('model-validate');
+	self.trigger('model-validate', [schema]);
 	return self;
 }
 
-function bindings_set(path, value) {
+function bindings_set(path, value, schema) {
 	var self = this;
 	var model = self.data('model');
 
@@ -208,29 +220,29 @@ function bindings_set(path, value) {
 		return self;
 
 	if (typeof(value) === 'function')
-		value = value(bindings_getvalue(model, path));
+		value = value(bindings_getvalue(model, path, schema));
 
-	var r = $.bindings._validation(path, value, model);
-	$.bindings.watch.call($('input[data-model="' + path + '"],textarea[data-model="' + path + '"],select[data-model="' + path + '"]'), r, path, value, model);
+	var r = $.bindings._validation(path, value, model, schema);
+	$.bindings.watch.call($('input[data-model="' + path + '"],textarea[data-model="' + path + '"],select[data-model="' + path + '"]'), r, path, value, model, schema);
 	if (!r)
 		return self;
 
-	if (bindings_setvalue(model, path, value))
-		bindings_rebind.call(self);
+	if (bindings_setvalue(model, path, value, schema))
+		bindings_rebind.call(self, schema);
 
-	self.trigger('model-update', model, path);
+	self.trigger('model-update', [model, path, schema]);
 	return self;
 }
 
-function bindings_get(path) {
+function bindings_get(path, schema) {
 	var self = this;
 	var model = self.data('model');
 	if (typeof(model) === 'undefined')
 		return;
-	return bindings_getvalue(model, path);
+	return bindings_getvalue(model, path, schema);
 }
 
-function bindings_rebind() {
+function bindings_rebind(schema) {
 
 	var self = this;
 	var model = self.data('model');
@@ -250,9 +262,9 @@ function bindings_rebind() {
 				var custom = el.attr('data-custom');
 				var value = bindings_getvalue(model, name);
 				if (typeof(custom) === 'undefined')
-					el.html($.bindings.format.call(el, name, value, el.attr('data-format'), model));
+					el.html($.bindings.format.call(el, name, value, el.attr('data-format'), model, schema));
 				else
-					$.bindings.custom.call(el, name, value, custom || '', model);
+					$.bindings.custom.call(el, name, value, custom || '', model, schema);
 				return;
 		}
 	});
@@ -260,7 +272,7 @@ function bindings_rebind() {
 	return self;
 }
 
-function bindings_refresh() {
+function bindings_refresh(schema) {
 	var self = this;
 
 	var model = self.data('model');
@@ -283,9 +295,9 @@ function bindings_refresh() {
 				break;
 		}
 
-		var value = bindings_getvalue(model, name);
+		var value = bindings_getvalue(model, name, schema);
 		var format = el.attr('data-format');
-		var value_new = $.bindings.format.call(self, name, value, format, model);
+		var value_new = $.bindings.format.call(self, name, value, format, model, schema);
 
 		if (typeof(value) === 'undefined')
 			value = el.attr('data-default');
@@ -301,15 +313,21 @@ function bindings_refresh() {
 					return;
 			} else
 				el.val(value_new);
+
+			return;
 		}
+
+		var custom = el.attr('data-custom');
+		if (typeof(custom) === 'undefined')
+			el.html($.bindings.format.call(el, name, value, el.attr('data-format'), model, schema));
 		else
-			el.html(value_new);
+			$.bindings.custom.call(el, name, value, custom || '', model, schema);
 	});
 
 	return self;
 }
 
-function bindings_send(url, options) {
+function bindings_send(url, options, schema) {
 
 	var self = this;
 	var model = self.data('model');
@@ -340,31 +358,31 @@ function bindings_send(url, options) {
 	if (jquerybindings_cache[key])
 		return;
 
-	self.trigger('model-send-begin', url, model);
+	self.trigger('model-send-begin', [url, model, schema]);
 
 	options.contentType = 'application/json';
 	options.data = JSON.stringify(model);
 
 	options.success = function(data) {
-		self.trigger('model-send-end', url, model);
+		self.trigger('model-send-end', [url, model, schema]);
 		delete jquerybindings_cache[key];
 		if (data instanceof Array)
-			self.trigger('model-send-no', data, model);
+			self.trigger('model-send-no', [data, model, schema]);
 		else
-			self.trigger('model-send-ok', data, model);
+			self.trigger('model-send-ok', [data, model, schema]);
 	};
 
 	options.error = function(xhr, status) {
-		self.trigger('model-send-end', url, model);
+		self.trigger('model-send-end', [url, model, schema]);
 		delete jquerybindings_cache[key];
-		self.trigger('model-send-error', status, url, model);
+		self.trigger('model-send-error', [status, url, model, schema]);
 	};
 
 	$.ajax(url, options);
 	return self;
 }
 
-$.bindings.prepare = function(path, value, format, model) {
+$.bindings.prepare = function(path, value, format, model, schema) {
 
 	if (typeof(value) !== 'string')
 		return value;
@@ -387,27 +405,27 @@ $.bindings.prepare = function(path, value, format, model) {
 	return parseFloat(value);
 };
 
-$.bindings.format = function(path, value, format, model) {
+$.bindings.format = function(path, value, format, model, schema) {
 	if (value instanceof Array)
 		return value.join(', ');
 	return value;
 };
 
-$.bindings.custom = function(path, value, custom, model) {};
-$.bindings.watch = function(isValid, path, value, model) {};
+$.bindings.custom = function(path, value, custom, model, schema) {};
+$.bindings.watch = function(isValid, path, value, model, schema) {};
 
-$.bindings.validation = function(path, value, model) {
+$.bindings.validation = function(path, value, model, schema) {
 	return true;
 };
 
-$.bindings._validation = function(path, value, model) {
-	var r = $.bindings.validation(path, value, model);
+$.bindings._validation = function(path, value, model, schema) {
+	var r = $.bindings.validation(path, value, model, schema);
 	if (typeof(r) === 'undefined' || r === null)
 		r = true;
 	return r === true;
 };
 
-function bindings_setvalue(obj, path, value) {
+function bindings_setvalue(obj, path, value, schema) {
 	path = path.split('.');
 	var length = path.length;
 	var current = obj;
@@ -420,7 +438,7 @@ function bindings_setvalue(obj, path, value) {
 	return true;
 }
 
-function bindings_getvalue(obj, path) {
+function bindings_getvalue(obj, path, schema) {
 	path = path.split('.');
 	var length = path.length;
 	var current = obj;

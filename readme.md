@@ -127,6 +127,14 @@ $('#form').bindings('get')('user.firstname');
 
 ```js
 $('#form').bindings('update')({ firstname: 'Janko', lastname: 'Izaak' });
+
+// OR
+
+$('#form').bindings('update')(function(model) {
+	model.firstname = 'Peter';
+	model.lastname = 'Širka';
+	return model;
+});
 ```
 
 #### $.bindings('model') or $.bindings();
@@ -242,7 +250,7 @@ $('#form').on('model-create', function(e, model) {
 });
 
 $('#form').on('model-update', function(e, model, path) {
-	// trigger after $().bindings('update')
+	// trigger after is model updated
 });
 
 $('#form').on('model-change', function(e, path, value, model) {
