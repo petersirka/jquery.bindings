@@ -70,7 +70,7 @@ function bindings_create(model, template, schema) {
 	}
 
 	if (typeof(template) !== 'undefined') {
-		
+
 		if (template.substring(0, 1) === '/') {
 			$.get(template, {}, function(data) {
 				bindings_create.call(self, model, data);

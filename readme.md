@@ -23,11 +23,15 @@ __MUST SEE:__
 ```js
 $('#form').bindings('create')({ firstname: 'Peter', lastname: 'Širka' });
 
-// or
+// or (XHR)
+
+$('#form').bindings('create')({ firstname: 'Peter', lastname: 'Širka' }, '/my-form.html');
+
+// or (HTML)
 
 $('#form').bindings('create')({ firstname: 'Peter', lastname: 'Širka' }, '<input type="text" data-model="firstname" /><span>your firstname: <b data-model="first-name"></b></span>');
 
-// or
+// or (SELECTOR)
 
 $('#form').bindings('create')({ firstname: 'Peter', lastname: 'Širka' }, '#template-selector');
 ```
