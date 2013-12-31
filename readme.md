@@ -2,6 +2,8 @@
 
 Simple jQuery two way bindings. This plugin joins HTML elements with a model and in reverse.
 
+![jQuery two way bindings](http://source.858project.com/img/jquery-bindings.png)
+
 - easy to use
 - minified only 11 kB (without GZIP compression)
 - great functionality
