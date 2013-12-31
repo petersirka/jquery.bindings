@@ -184,7 +184,11 @@ $.bindings.prepare = function(path, value, format, model) {
 > Format current value from a MODEL to a HTML. Always must return a value.
 
 ```html
-<div data-model="age" data-format="years old"></div>
+<!-- ENCODED -->
+<div data-model="age" data-format="years <b>old</b>"></div>
+
+<!-- OR RAW -->
+<div data-model="age" data-format="years <b>old</b>" data-encode="false"></div>
 ```
 
 ```js

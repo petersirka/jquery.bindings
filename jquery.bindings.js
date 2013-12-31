@@ -261,10 +261,14 @@ function bindings_rebind(schema) {
 				var name = el.attr('data-model');
 				var custom = el.attr('data-custom');
 				var value = bindings_getvalue(model, name);
-				if (typeof(custom) === 'undefined')
-					el.html($.bindings.format.call(el, name, value, el.attr('data-format'), model, schema));
-				else
+				if (typeof(custom) !== 'undefined') {
 					$.bindings.custom.call(el, name, value, custom || '', model, schema);
+					return;
+				}
+				var attr = el.attr('data-encode');
+				var isRaw = typeof(attr) !== 'undefined' && attr === 'false';
+				var val = $.bindings.format.call(el, name, value, el.attr('data-format'), model, schema);
+				el.html(isRaw ? val : val.encode());
 				return;
 		}
 	});
@@ -318,10 +322,16 @@ function bindings_refresh(schema) {
 		}
 
 		var custom = el.attr('data-custom');
-		if (typeof(custom) === 'undefined')
-			el.html($.bindings.format.call(el, name, value, el.attr('data-format'), model, schema));
-		else
+
+		if (typeof(custom) !== 'undefined') {
 			$.bindings.custom.call(el, name, value, custom || '', model, schema);
+			return;
+		}
+
+		var attr = el.attr('data-encode');
+		var isRaw = typeof(attr) !== 'undefined' && attr === 'false';
+		var val = $.bindings.format.call(el, name, value, el.attr('data-format'), model, schema)
+		el.html(isRaw ? val : val.encode());
 	});
 
 	return self;
@@ -476,6 +486,12 @@ if (!String.prototype.isNumber) {
 		}
 
 		return true;
+	};
+}
+
+if (!String.prototype.encode) {
+	String.prototype.encode = function() {
+		return this.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 	};
 }
 
