@@ -86,6 +86,9 @@ function bindings_create(model, template, schema) {
 		var type = el.attr('type');
 		var value = el.val();
 
+		e.preventDefault();
+		e.stopPropagation();
+
 		if (type === 'checkbox')
 			value = this.checked;
 
@@ -110,7 +113,7 @@ function bindings_create(model, template, schema) {
 			this.checked = value;
 
 		bindings_rebind.call(self);
-		self.trigger('model-change', [name, value_new, model, schema]);
+		self.trigger('model-change', [name, value_new, model, schema, el]);
 		self.trigger('model-update', [model, name, schema]);
 	});
 

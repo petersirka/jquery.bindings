@@ -252,23 +252,23 @@ $.bindings.watch = function(isValid, path, value, model, name) {
 
 ```js
 $('#form').on('model-create', function(e, model) {
-	// trigger after $().bindings('create')
+	// Is triggered after $().bindings('create')
 });
 
 $('#form').on('model-update', function(e, model, path) {
-	// trigger after is model updated
+	// Is triggered after is the model updated
 });
 
-$('#form').on('model-change', function(e, path, value, model) {
-	// change a value in the model
+$('#form').on('model-change', function(e, path, value, model, name, element) {
+	// Is triggered when is changed a value in the model through HTML element
 });
 
 $('#form').on('model-destroy', function(e) {
-	// destroy bindings
+	// Is triggered when is destroyed binding
 });
 
 $('#form').on('model-default', function(e, model) {
-	// set a default model
+	// set to the default model
 });
 
 $('#form').on('model-validate', function(e, errorlist) {
