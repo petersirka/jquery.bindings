@@ -400,9 +400,13 @@ $.bindings.prepare = function(path, value, format, model, schema) {
 	if (bindings_getvalue(model, path) instanceof Array) {
 		var arr = value.split(',');
 		var length = arr.length;
-		for (var i = 0; i < length; i++)
-			arr[i] = $.trim(arr[i]);
-		return arr;
+		var tmp = [];
+		for (var i = 0; i < length; i++) {
+			var val = $.trim(arr[i]);
+			if (val.length > 0)
+				tmp.push(val);
+		}
+		return tmp;
 	}
 
 	if (!value.isNumber())
