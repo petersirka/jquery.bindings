@@ -165,12 +165,12 @@ $('#form').bindings('send')('/form/submit/', { type: 'PUT' });
 
 ## Delegates
 
-#### $.bindings.prepare(path, value, format, model)
+#### $.bindings.prepare(path, value, format, model, name)
 
 > Prepare current value from an INPUT to a MODEL. Always must return a value.
 
 ```js
-$.bindings.prepare = function(path, value, format, model) {
+$.bindings.prepare = function(path, value, format, model, name) {
 	// EXAMPLE:
 	// this === current element with data-model attribute
 	if (path === 'age')
@@ -192,7 +192,7 @@ $.bindings.prepare = function(path, value, format, model) {
 ```
 
 ```js
-$.bindings.format = function(path, value, format, model) {
+$.bindings.format = function(path, value, format, model, name) {
 	// EXAMPLE:
 	// this === current element with data-model attribute
 	if (path === 'age')
@@ -201,7 +201,7 @@ $.bindings.format = function(path, value, format, model) {
 };
 ```
 
-#### $.bindings.custom(path, value, format, model)
+#### $.bindings.custom(path, value, format, model, name)
 
 > Format current value from a MODEL to HTML. Always must return a value.
 
@@ -210,7 +210,7 @@ $.bindings.format = function(path, value, format, model) {
 ```
 
 ```js
-$.bindings.custom = function(path, value, custom, model) {
+$.bindings.custom = function(path, value, custom, model, name) {
 	// EXAMPLE:
 	// this === current element with data-model and data-custom attribute
 	if (path === 'age' && custom === 'custom-value')
@@ -219,12 +219,12 @@ $.bindings.custom = function(path, value, custom, model) {
 };
 ```
 
-#### $.bindings.validation(path, value, model)
+#### $.bindings.validation(path, value, model, name)
 
 > Validate current value to MODEL. Always must return Boolean.
 
 ```js
-$.bindings.validation = function(path, value, model) {
+$.bindings.validation = function(path, value, model, name) {
 
 	switch (path) {
 		case 'age':
@@ -235,12 +235,12 @@ $.bindings.validation = function(path, value, model) {
 };
 ```
 
-#### $.bindings.watch(isValid, path, value, model)
+#### $.bindings.watch(isValid, path, value, model, name)
 
 > Watch an element.
 
 ```js
-$.bindings.watch = function(isValid, path, value, model) {
+$.bindings.watch = function(isValid, path, value, model, name) {
 	var el = this;
 	el.toggleClass('error', isValid);
 };
