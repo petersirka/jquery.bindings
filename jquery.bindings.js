@@ -79,48 +79,60 @@ function bindings_create(model, template, schema) {
 			template = $(template).html();
 	}
 
-	self.on('change', 'input[data-model],textarea[data-model],select[data-model]', function(e) {
+	self.on('change keydown', 'input[data-model]', function(e) {
 
-		var el = $(this);
-		var name = el.attr('data-model');
-		var type = el.attr('type');
-		var value = el.val();
-
-		e.preventDefault();
-		e.stopPropagation();
-
-		if (type === 'checkbox')
-			value = this.checked;
-
-		var value_new = $.bindings.prepare.call(el, name, value, el.attr('data-prepare'), model, schema);
-		var r = $.bindings._validation.call(el, name, value_new, model, schema);
-
-		$.bindings.watch.call(el, r, name, value_new, model, schema);
-
-		if (!r)
+		if (e.type === 'keydown' && e.keyCode !== 13)
 			return;
 
-		bindings_setvalue.call(el, model, name, value_new, schema);
+		bindings_internal_change.call(this, e, self, model, schema);
+	});
 
-		if (type !== 'checkbox' && type !== 'radio') {
-			switch (this.tagName.toLowerCase()) {
-				case 'input':
-				case 'textarea':
-					this.value = $.bindings.format.call(el, name, value_new, el.attr('data-format'), self.data('model'), schema);
-					break;
-			}
-		} else
-			this.checked = value;
-
-		bindings_rebind.call(self);
-		self.trigger('model-change', [name, value_new, model, schema, el]);
-		self.trigger('model-update', [model, name, schema]);
+	self.on('change', 'textarea[data-model],select[data-model]', function(e) {
+		bindings_internal_change.call(this, e, self, model, schema);
 	});
 
 	bindings_refresh.call(self);
 	self.trigger('model-create', [model, schema]);
 
 	return bindings_rebind.call(self);
+}
+
+function bindings_internal_change(e, self, model, schema) {
+	var el = $(this);
+	var name = el.attr('data-model');
+	var type = el.attr('type');
+	var value = el.val();
+
+	e.preventDefault();
+	e.stopPropagation();
+	e.stopImmediatePropagation();
+
+	if (type === 'checkbox')
+		value = this.checked;
+
+	var value_new = $.bindings.prepare.call(el, name, value, el.attr('data-prepare'), model, schema);
+	var r = $.bindings._validation.call(el, name, value_new, model, schema);
+
+	$.bindings.watch.call(el, r, name, value_new, model, schema);
+
+	if (!r)
+		return;
+
+	bindings_setvalue.call(el, model, name, value_new, schema);
+
+	if (type !== 'checkbox' && type !== 'radio') {
+		switch (this.tagName.toLowerCase()) {
+			case 'input':
+			case 'textarea':
+				this.value = $.bindings.format.call(el, name, value_new, el.attr('data-format'), self.data('model'), schema);
+				break;
+		}
+	} else
+		this.checked = value;
+
+	bindings_rebind.call(self);
+	self.trigger('model-change', [name, value_new, model, schema, el]);
+	self.trigger('model-update', [model, name, schema]);
 }
 
 function bindings_json(query, template, schema) {
