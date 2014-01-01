@@ -18,6 +18,31 @@ __MUST SEE:__
 - [jQuery templating engine according to partial.js](https://github.com/petersirka/jquery.templates)
 - [Web application framework for node.js - partial.js](https://github.com/petersirka/partial.js)
 
+#### How does it works?
+
+- plugin connects a JavaScript object with HTML elements according to data-model attribute
+- data-model must contain object property name
+- in INPUTS, SELECTS and TEXTAREAS plugin uses two way bindings
+- model is updated when is changed value in a INPUT/SELECT/TEXTAREA or manually $('#container').bindings('set')(...)
+
+__HTML attributes:__
+
+```html
+<div id="container" data-name="my-model-1">
+	<div><input type="text" data-model="property" /></div>
+	<div data-model="property"></div>
+	<div data-model="property.next.property"></div>
+	<div data-model="created" data-format="your-custom-format"></div>
+	<div data-model="tags" data-custom="your-custom-identificator"></div>
+	<div data-model="html" data-encode="false"></div>
+</div>
+```
+
+- data-name="{String}" is a container name
+- data-encode="{Boolean}" enable HTML encoding/decoding string (default: true)
+- data-format="{String}" calls $.bindings.format() delegate
+- data-custom="{String}" calls $.bindings.custom() delegate
+
 #### $.bindings('create')(model, [template]);
 
 > Create bindings.
@@ -313,15 +338,15 @@ $('#form').on('model-download-end', function(e, url, data) {
 	// IMPORTANT: always is executed
 });
 
+$('#form').on('model-download-error', function(e, status, url) {
+	// error
+});
+
 $('#form').on('template-download-begin', function(e, url) {
 	// begin downloading template
 });
 
 $('#form').on('template-download-end', function(e, url, data) {
 	// end downloading template
-});
-
-$('#form').on('model-download-error', function(e, status, url) {
-	// error
 });
 ```
