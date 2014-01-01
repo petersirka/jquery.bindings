@@ -23,7 +23,7 @@ __MUST SEE:__
 - plugin connects a JavaScript object with HTML elements according to data-model attribute
 - data-model must contain object property name
 - in INPUTS, SELECTS and TEXTAREAS plugin uses two way bindings
-- model is updated when is changed value in a INPUT/SELECT/TEXTAREA or manually $('#container').bindings('set')(...)
+- model is updated when is changed value in a INPUT/SELECT/TEXTAREA or [manually](#bindingssetpath-value)
 
 __HTML attributes:__
 
