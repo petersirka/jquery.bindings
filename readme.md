@@ -1,6 +1,6 @@
 # jQuery two way bindings
 
-Simple jQuery two way bindings. This plugin joins HTML elements with a model and in reverse. __Little big cannon for the web development.__
+Simple jQuery two way bindings. This plugin joins HTML elements with a model and in reverse. __A little big cannon for the web development.__
 
 ![jQuery two way bindings](http://source.858project.com/img/jquery-two-way-bindings.png)
 
