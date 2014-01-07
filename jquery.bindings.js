@@ -155,11 +155,11 @@ function bindings_json(query, template, schema) {
 		case 'input':
 		case 'select':
 		case 'textarea':
-			bindings_create.call(el, $.parseJSON(q.val()), template, schema);
+			bindings_create.call(el, $.parseJSON(q.val().replace(/\n/g, '\\n')), template, schema);
 			return;
 	}
 
-	bindings_create.call(el, $.parseJSON(q.html()), template, schema);
+	bindings_create.call(el, $.parseJSON(q.html().replace(/\n/g, '\\n')), template, schema);
 	return el;
 }
 
