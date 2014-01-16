@@ -18,6 +18,8 @@ $.fn.bindings = function(type) {
 			return (function(query, template) { return bindings_json.call(self, query, template, schema); });
 		case 'download':
 			return (function(url, template, options) { return bindings_download.call(self, url, template, options, schema); });
+		case 'change':
+			return (function(value) { if (typeof(value) !== 'boolean') return self.data('isChange') || false; return self.data('isChange', value); });
 		case 'refresh':
 			bindings_refresh.call(self, schema);
 			return;
@@ -39,7 +41,7 @@ $.fn.bindings = function(type) {
 		case 'model':
 			return bindings_create.call(self, null, null, schema);
 		case 'send':
-			return (function(url, options) { return bindings_send.call(self, url, options, schema); });
+			return (function(url, options, callback) { return bindings_send.call(self, url, options, schema, callback); });
 	}
 
 	return self;
@@ -53,6 +55,8 @@ function bindings_create(model, template, schema) {
 		return $.extend({}, self.data('model'));
 
 	var tmp = self.data('model');
+
+	self.data('isChange', false);
 
 	if (typeof(tmp) !== 'undefined') {
 
@@ -141,6 +145,7 @@ function bindings_internal_change(e, self, model, schema) {
 		this.checked = value;
 
 	bindings_rebind.call(self);
+	self.data('isChange', true);
 	self.trigger('model-change', [name, value_new, model, schema, el]);
 	self.trigger('model-update', [model, name, schema]);
 }
@@ -216,6 +221,7 @@ function bindings_default() {
 	var self = this;
 	var model = self.data('default');
 	self.data('model', model);
+	self.data('isChange', false);
 	bindings_refresh.call(self);
 	self.trigger('model-default', [model, schema]);
 	return self;
@@ -255,6 +261,7 @@ function bindings_set(path, value, schema) {
 	if (bindings_setvalue(model, path, value, schema))
 		bindings_rebind.call(self, schema);
 
+	self.data('isChange', true);
 	self.trigger('model-update', [model, path, schema]);
 	return self;
 }
@@ -362,7 +369,7 @@ function bindings_refresh(schema) {
 	return self;
 }
 
-function bindings_send(url, options, schema) {
+function bindings_send(url, options, schema, callback) {
 
 	var self = this;
 	var model = self.data('model');
@@ -405,12 +412,17 @@ function bindings_send(url, options, schema) {
 			self.trigger('model-send-no', [data, model, schema]);
 		else
 			self.trigger('model-send-ok', [data, model, schema]);
+
+		if (callback)
+			callback(null, data);
 	};
 
 	options.error = function(xhr, status) {
 		self.trigger('model-send-end', [url, model, schema]);
 		delete jquerybindings_cache[key];
 		self.trigger('model-send-error', [status, url, model, schema]);
+		if (callback)
+			callback(status, null);
 	};
 
 	$.ajax(url, options);

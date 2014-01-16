@@ -196,6 +196,19 @@ $('#form').bindings('send')('/form/submit/');
 $('#form').bindings('send')('/form/submit/', { type: 'PUT' });
 ```
 
+#### $.bindings('change')([isChange])
+
+> Was a model changed?
+
+```js
+
+console.log($('#form').bindings('change')());
+
+// or, custom set:
+
+$('#form').bindings('change')(true);
+```
+
 ## Delegates
 
 #### $.bindings.prepare(path, value, format, model, name)
