@@ -184,7 +184,7 @@ $('#form').bindings('model');
 // OUTPUT: { firstname: 'Janko', lastname: 'Izaak' }
 ```
 
-#### $.bindings('send')(url, [options])
+#### $.bindings('send')(url, [options], [callback(err, data)])
 
 > Send a model via XHR as application/json.
 

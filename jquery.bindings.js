@@ -41,7 +41,16 @@ $.fn.bindings = function(type) {
 		case 'model':
 			return bindings_create.call(self, null, null, schema);
 		case 'send':
-			return (function(url, options, callback) { return bindings_send.call(self, url, options, schema, callback); });
+			return (function(url, options, callback) {
+
+				if (typeof(options) === 'function') {
+					var tmp = callback;
+					callback = options;
+					options = callback;
+				}
+
+				return bindings_send.call(self, url, options, schema, callback);
+			});
 	}
 
 	return self;
