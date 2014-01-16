@@ -308,8 +308,17 @@ function bindings_rebind(schema) {
 				}
 				var attr = el.attr('data-encode');
 				var isRaw = typeof(attr) !== 'undefined' && attr === 'false';
-				var val = ($.bindings.format.call(el, name, value, el.attr('data-format'), model, schema) || '').toString();
-				el.html(isRaw ? val : val.encode());
+				var val = $.bindings.format.call(el, name, value, el.attr('data-format'), model, schema);
+
+				if (typeof(val) === 'undefined')
+					val = '';
+
+				if (typeof(val) !== 'string') {
+					if (val instanceof Array)
+						val = val.join(', ');
+					else
+						val = val.toString();
+				}
 				return;
 		}
 	});
@@ -371,7 +380,18 @@ function bindings_refresh(schema) {
 
 		var attr = el.attr('data-encode');
 		var isRaw = typeof(attr) !== 'undefined' && attr === 'false';
-		var val = ($.bindings.format.call(el, name, value, el.attr('data-format'), model, schema) || '').toString();
+		var val = $.bindings.format.call(el, name, value, el.attr('data-format'), model, schema);
+
+		if (typeof(val) === 'undefined')
+			val = '';
+
+		if (typeof(val) !== 'string') {
+			if (val instanceof Array)
+				val = val.join(', ');
+			else
+				val = val.toString();
+		}
+
 		el.html(isRaw ? val : val.encode());
 	});
 
