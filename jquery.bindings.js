@@ -30,8 +30,7 @@ $.fn.bindings = function(type) {
 			bindings_default.call(self, schema);
 			return;
 		case 'validate':
-			bindings_validate.call(self, schema);
-			return;
+			return bindings_validate.call(self, schema);
 		case 'set':
 			return (function(path, value) { return bindings_set.call(self, path, value, schema); });
 		case 'get':
@@ -248,7 +247,7 @@ function bindings_validate(schema) {
 		error.push({ path: path, value: value, element: $('input[data-model="' + path + '"],textarea[data-model="' + path + '"],select[data-model="' + path + '"]') });
 	});
 
-	self.trigger('model-validate', [schema]);
+	self.trigger('model-validate', [error, schema]);
 	return self;
 }
 
