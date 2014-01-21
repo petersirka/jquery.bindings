@@ -477,6 +477,9 @@ $.bindings.prepare = function(path, value, format, model, schema) {
 	if (!value.isNumber())
 		return value;
 
+	if (value[0] === '0')
+		return value;
+
 	value = value.replace(',', '.');
 	if (value.indexOf('.') === -1)
 		return parseInt(value);
