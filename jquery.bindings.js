@@ -231,7 +231,7 @@ function bindings_default() {
 	self.data('model', model);
 	self.data('isChange', false);
 	bindings_refresh.call(self);
-	self.trigger('model-default', [model, schema]);
+	self.trigger('model-default', [model, self.attr('data-name')]);
 	return self;
 }
 
