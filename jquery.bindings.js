@@ -263,6 +263,7 @@ function bindings_set(path, value, schema) {
 
 	var r = $.bindings._validation(path, value, model, schema);
 	$.bindings.watch.call($('input[data-model="' + path + '"],textarea[data-model="' + path + '"],select[data-model="' + path + '"]'), r, path, value, model, schema);
+
 	if (!r)
 		return self;
 
@@ -301,10 +302,12 @@ function bindings_rebind(schema) {
 				var name = el.attr('data-model');
 				var custom = el.attr('data-custom');
 				var value = bindings_getvalue(model, name);
+
 				if (typeof(custom) !== 'undefined') {
 					$.bindings.custom.call(el, name, value, custom || '', model, schema);
 					return;
 				}
+
 				var attr = el.attr('data-encode');
 				var isRaw = typeof(attr) !== 'undefined' && attr === 'false';
 				var val = $.bindings.format.call(el, name, value, el.attr('data-format'), model, schema);
@@ -318,6 +321,8 @@ function bindings_rebind(schema) {
 					else
 						val = val.toString();
 				}
+
+				el.html(val);
 				return;
 		}
 	});
