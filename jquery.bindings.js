@@ -283,7 +283,8 @@ function bindings_get(path, schema) {
 	return bindings_getvalue(model, path, schema);
 }
 
-function bindings_rebind(schema) {
+
+function bindings_rebind_force(schema) {
 
 	var self = this;
 	var model = self.data('model');
@@ -327,6 +328,26 @@ function bindings_rebind(schema) {
 		}
 	});
 
+	return self;
+}
+
+function bindings_rebind(schema) {
+
+	var self = this;
+	var model = self.data('model');
+
+	if (typeof(model) === 'undefined')
+		return self;
+
+	var timeout = self.data('timeout') || null;
+	if (timeout !== null)
+		clearTimeout(timeout);
+
+	var timeout = setTimeout(function() {
+		bindings_rebind_force.call(self, schema);
+	}, 100);
+
+	self.data('timeout', timeout);
 	return self;
 }
 
