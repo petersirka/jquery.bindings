@@ -76,7 +76,7 @@ function bindings_create(model, template, schema) {
 		else
 			self.data('model', model);
 
-		bindings_refresh.call(self);
+		bindings_refresh.call(self, schema);
 		self.trigger('model-update', [model, schema]);
 		return self;
 	}
@@ -87,7 +87,7 @@ function bindings_create(model, template, schema) {
 			self.trigger('template-download-begin', [template]);
 			$.get(template, {}, function(data) {
 				self.trigger('template-download-end', [template, data]);
-				bindings_create.call(self, model, data);
+				bindings_create.call(self, self.data('model'), data);
 			});
 			return;
 		}
@@ -102,18 +102,16 @@ function bindings_create(model, template, schema) {
 	self.data('model', model);
 
 	self.on('change keydown', 'input[data-model]', function(e) {
-
 		if (e.type === 'keydown' && e.keyCode !== 13)
 			return;
-
-		bindings_internal_change.call(this, e, self, model, schema);
+		bindings_internal_change.call(this, e, self, self.data('model'), schema);
 	});
 
 	self.on('change', 'textarea[data-model],select[data-model]', function(e) {
-		bindings_internal_change.call(this, e, self, model, schema);
+		bindings_internal_change.call(this, e, self, self.data('model'), schema);
 	});
 
-	bindings_refresh.call(self);
+	bindings_refresh.call(self, schema);
 	self.trigger('model-create', [model, schema]);
 
 	return bindings_rebind.call(self);
@@ -152,7 +150,8 @@ function bindings_internal_change(e, self, model, schema) {
 	} else
 		this.checked = value;
 
-	bindings_rebind.call(self);
+
+	bindings_rebind.call(self, schema);
 	self.data('isChange', true);
 	self.trigger('model-change', [name, value_new, model, schema, el]);
 	self.trigger('model-update', [model, name, schema]);
@@ -228,10 +227,11 @@ function bindings_destroy() {
 function bindings_default() {
 	var self = this;
 	var model = self.data('default');
-	self.data('model', model);
+	var schema = self.attr('data-name');
+	self.data('model', $.extend({}, model));
 	self.data('isChange', false);
-	bindings_refresh.call(self);
-	self.trigger('model-default', [model, self.attr('data-name')]);
+	bindings_refresh.call(self, schema);
+	self.trigger('model-default', [model, schema]);
 	return self;
 }
 
@@ -293,39 +293,36 @@ function bindings_rebind_force(schema) {
 		return self;
 
 	self.find('[data-model]').each(function() {
+
+		var tag = this.tagName.toLowerCase();
+		if (tag === 'input' || tag === 'select' || tag === 'textarea')
+			return;
+
 		var el = $(this);
-		switch (this.tagName.toLowerCase()) {
-			case 'input':
-			case 'textarea':
-			case 'select':
-				return;
-			default:
-				var name = el.attr('data-model');
-				var custom = el.attr('data-custom');
-				var value = bindings_getvalue(model, name);
+		var name = el.attr('data-model');
+		var custom = el.attr('data-custom');
+		var value = bindings_getvalue(model, name);
 
-				if (typeof(custom) !== 'undefined') {
-					$.bindings.custom.call(el, name, value, custom || '', model, schema);
-					return;
-				}
-
-				var attr = el.attr('data-encode');
-				var isRaw = typeof(attr) !== 'undefined' && attr === 'false';
-				var val = $.bindings.format.call(el, name, value, el.attr('data-format'), model, schema);
-
-				if (typeof(val) === 'undefined')
-					val = '';
-
-				if (typeof(val) !== 'string') {
-					if (val instanceof Array)
-						val = val.join(', ');
-					else
-						val = val.toString();
-				}
-
-				el.html(val);
-				return;
+		if (typeof(custom) !== 'undefined') {
+			$.bindings.custom.call(el, name, value, custom || '', model, schema);
+			return;
 		}
+
+		var attr = el.attr('data-encode');
+		var isRaw = typeof(attr) !== 'undefined' && attr === 'false';
+		var val = $.bindings.format.call(el, name, value, el.attr('data-format'), model, schema);
+
+		if (typeof(val) === 'undefined')
+			val = '';
+
+		if (typeof(val) !== 'string') {
+			if (val instanceof Array)
+				val = val.join(', ');
+			else
+				val = val.toString();
+		}
+
+		el.html(val);
 	});
 
 	return self;
