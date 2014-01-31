@@ -130,7 +130,12 @@ function bindings_internal_change(e, self, model, schema) {
 	if (type === 'checkbox')
 		value = this.checked;
 
-	var value_new = $.bindings.prepare.call(el, name, value, el.attr('data-prepare'), model, schema);
+	var prepare = el.attr('data-prepare');
+	var value_new = $.bindings.prepare.call(el, name, value, prepare, model, schema);
+
+	if (typeof(value_new) === 'undefined')
+		value_new = $.bindings._prepare.call(el, name, value, prepare, model, schema);
+
 	var r = $.bindings._validation.call(el, name, value_new, model, schema);
 
 	$.bindings.watch.call(el, r, name, value_new, model, schema);
@@ -268,7 +273,7 @@ function bindings_set(path, value, schema) {
 		return self;
 
 	if (bindings_setvalue(model, path, value, schema))
-		bindings_rebind.call(self, schema);
+		bindings_refresh.call(self, schema);
 
 	self.data('isChange', true);
 	self.trigger('model-update', [model, path, schema]);
@@ -336,7 +341,7 @@ function bindings_rebind(schema) {
 	if (typeof(model) === 'undefined')
 		return self;
 
-	var timeout = self.data('timeout') || null;
+	var timeout = self.data('timeout_rebind') || null;
 	if (timeout !== null)
 		clearTimeout(timeout);
 
@@ -344,11 +349,32 @@ function bindings_rebind(schema) {
 		bindings_rebind_force.call(self, schema);
 	}, 100);
 
-	self.data('timeout', timeout);
+	self.data('timeout_rebind', timeout);
 	return self;
 }
 
 function bindings_refresh(schema) {
+
+	var self = this;
+	var model = self.data('model');
+
+	if (typeof(model) === 'undefined')
+		return self;
+
+	var timeout = self.data('timeout_refresh') || null;
+	if (timeout !== null)
+		clearTimeout(timeout);
+
+	var timeout = setTimeout(function() {
+		bindings_refresh_force.call(self, schema);
+	}, 100);
+
+	self.data('timeout_refresh', timeout);
+	return self;
+}
+
+
+function bindings_refresh_force(schema) {
 	var self = this;
 
 	var model = self.data('model');
@@ -373,36 +399,35 @@ function bindings_refresh(schema) {
 
 		var value = bindings_getvalue(model, name, schema);
 		var format = el.attr('data-format');
-		var value_new = $.bindings.format.call(self, name, value, format, model, schema);
+		var custom = el.attr('data-custom');
 
 		if (typeof(value) === 'undefined')
 			value = el.attr('data-default');
-
-		if (isIO) {
-			var type = el.attr('type');
-			if (type === 'checkbox')
-				this.checked = value === true || value === 1 || value == 'true';
-			else if (type === 'radio') {
-				if (this.value == value)
-					this.checked = true;
-				else
-					return;
-			} else
-				el.val(value_new);
-
-			return;
-		}
-
-		var custom = el.attr('data-custom');
 
 		if (typeof(custom) !== 'undefined') {
 			$.bindings.custom.call(el, name, value, custom || '', model, schema);
 			return;
 		}
 
+		var val = $.bindings.format.call(self, name, value, format, model, schema);
+
+		if (isIO) {
+			var type = el.attr('type');
+			if (type === 'checkbox')
+				this.checked = value === true || value === 1 || value === 'true';
+			else if (type === 'radio') {
+				if (this.value == value)
+					this.checked = true;
+				else
+					return;
+			} else
+				el.val(val);
+
+			return;
+		}
+
 		var attr = el.attr('data-encode');
 		var isRaw = typeof(attr) !== 'undefined' && attr === 'false';
-		var val = $.bindings.format.call(el, name, value, el.attr('data-format'), model, schema);
 
 		if (typeof(val) === 'undefined')
 			val = '';
@@ -480,7 +505,9 @@ function bindings_send(url, options, schema, callback) {
 	return self;
 }
 
-$.bindings.prepare = function(path, value, format, model, schema) {
+$.bindings.prepare = function(path, value, format, model, schema) {}
+
+$.bindings._prepare = function(path, value, format, model, schema) {
 
 	if (typeof(value) !== 'string')
 		return value;
