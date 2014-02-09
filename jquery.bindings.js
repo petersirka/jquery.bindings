@@ -98,7 +98,7 @@ function bindings_create(model, template, schema) {
 			template = $(template).html();
 	}
 
-	self.data('default', $.extend({}, model));
+	self.data('default', $.extend(true, {}, model));
 	self.data('model', model);
 
 	self.on('change keydown', 'input[data-model]', function(e) {
@@ -249,7 +249,7 @@ function bindings_validate(schema) {
 		var r = $.bindings._validation(path, value);
 		if (typeof(r) === 'undefined' || r === null || r)
 			return;
-		error.push({ path: path, value: value, element: $('input[data-model="' + path + '"],textarea[data-model="' + path + '"],select[data-model="' + path + '"]') });
+		error.push({ path: path, value: value, element: self.find('input[data-model="' + path + '"],textarea[data-model="' + path + '"],select[data-model="' + path + '"]') });
 	});
 
 	self.trigger('model-validate', [error, schema]);
