@@ -334,12 +334,8 @@ $('#form').on('model-send-error', function(e, status, url, model) {
 	// error
 });
 
-$('#form').on('model-send-no', function(e, data, model) {
-	// Response data is an Array
-});
-
-$('#form').on('model-send-ok', function(e, data, model) {
-	// Response ata is an Object
+$('#form').on('model-send', function(e, data, model) {
+	// Response data
 });
 
 $('#form').on('model-download-begin', function(e, url) {

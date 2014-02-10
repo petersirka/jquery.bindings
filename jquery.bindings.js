@@ -484,11 +484,7 @@ function bindings_send(url, options, schema, callback) {
 	options.success = function(data) {
 		self.trigger('model-send-end', [url, model, schema]);
 		delete jquerybindings_cache[key];
-		if (data instanceof Array)
-			self.trigger('model-send-no', [data, model, schema]);
-		else
-			self.trigger('model-send-ok', [data, model, schema]);
-
+		self.trigger('model-send', [data, model, schema]);
 		if (callback)
 			callback(null, data);
 	};
