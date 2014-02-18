@@ -30,6 +30,7 @@ $.fn.bindings = function(type) {
 			bindings_default.call(self, schema);
 			return;
 		case 'validate':
+		case 'validation':
 			return bindings_validate.call(self, schema);
 		case 'set':
 			return (function(path, value) { return bindings_set.call(self, path, value, schema); });
@@ -223,7 +224,10 @@ function bindings_download(url, template, options, schema) {
 
 function bindings_destroy() {
 	var self = this;
+	var schema = self.attr('data-name');
 	self.removeData('model');
+	self.removeData('default');
+	self.removeData('isChange');
 	self.find('input[data-model],textarea[data-model],select[data-model]').unbind('change');
 	self.trigger('model-destroy', [schema]);
 	return self;
@@ -246,13 +250,14 @@ function bindings_validate(schema) {
 	var error = [];
 
 	bindings_reflection(model, function(path, value, key) {
-		var r = $.bindings._validation(path, value);
+		var r = $.bindings._validation(path, value, schema);
 		if (typeof(r) === 'undefined' || r === null || r)
 			return;
 		error.push({ path: path, value: value, element: self.find('input[data-model="' + path + '"],textarea[data-model="' + path + '"],select[data-model="' + path + '"]') });
 	});
 
 	self.trigger('model-validate', [error, schema]);
+	self.trigger('model-validation', [error, schema]);
 	return self;
 }
 
@@ -372,7 +377,6 @@ function bindings_refresh(schema) {
 	self.data('timeout_refresh', timeout);
 	return self;
 }
-
 
 function bindings_refresh_force(schema) {
 	var self = this;
@@ -523,7 +527,7 @@ $.bindings._prepare = function(path, value, format, model, schema) {
 	if (!value.isNumber())
 		return value;
 
-	if (value[0] === '0')
+	if (value[0] === '0' && value.length > 1)
 		return value;
 
 	value = value.replace(',', '.');
