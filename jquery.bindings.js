@@ -1,5 +1,4 @@
 var jquerybindings_cache = {};
-
 $.bindings = {};
 
 $.fn.bindings = function (type) {
@@ -548,13 +547,50 @@ function bindings_setvalue(obj, path, value, schema) {
     path = path.split('.');
     var length = path.length;
     var current = obj;
+
     for (var i = 0; i < length - 1; i++) {
-        if (typeof (current[path[i]]) === 'undefined')
+        current = bindings_findpipe(current, path[i]);
+        if (typeof(current) === 'undefined')
             return false;
-        current = current[path[i]];
     }
-    current[path[length - 1]] = value;
+
+    //console.log('OK');
+    //console.log(path[length - 1]);
+    current = bindings_findpipe(current, path[length - 1], value);
     return true;
+}
+
+function bindings_findpipe(current, name, value) {
+    var beg = name.lastIndexOf('[');
+    var pipe;
+    var index = -1;
+
+    if (beg !== -1) {
+
+        index = parseInt(name.substring(beg + 1).replace(/\]\[/g, ''));
+        if (isNaN(index))
+            return;
+
+        name = name.substring(0, beg);
+        pipe = current[name][index];
+
+    } else
+        pipe = current[name];
+
+    if (typeof (pipe) === 'undefined')
+        return;
+
+    if (value) {
+        if (index !== -1) {
+            current[name][index] = value;
+            pipe = current[name][index];
+        } else {
+            current[name] = value;
+            pipe = current[name];
+        }
+    }
+
+    return pipe;
 }
 
 function bindings_getvalue(obj, path, schema) {
@@ -562,9 +598,9 @@ function bindings_getvalue(obj, path, schema) {
     var length = path.length;
     var current = obj;
     for (var i = 0; i < path.length; i++) {
-        if (typeof (current[path[i]]) === 'undefined')
+        current = bindings_findpipe(current, path[i]);
+        if (typeof(current) === 'undefined')
             return;
-        current = current[path[i]];
     }
     return current;
 }

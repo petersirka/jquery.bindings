@@ -99,6 +99,15 @@ $('#form').bindings('json')('#model-selector', '<input type="text" data-model="f
 $('#form').bindings('json')('#model-selector', '#template-selector');
 ```
 
+#### $.bindings('refresh');
+
+> Refresh values in HTML.
+
+```js
+$('#form').bindings('refresh');
+```
+
+
 #### $.bindings('destroy');
 
 > Destroy bindings.
