@@ -45,7 +45,6 @@ $.fn.bindings = function (type) {
                     callback = options;
                     options = callback;
                 }
-
                 return bindings_send.call(self, url, options, schema, callback);
             });
     }
@@ -96,9 +95,7 @@ function bindings_create(model, template, schema) {
     self.data('default', $.extend(true, {}, model));
     self.data('model', model);
 
-    self.on('change keydown', 'input[data-model]', function (e) {
-        if (e.type === 'keydown' && e.keyCode !== 13)
-            return;
+    self.on('change', 'input[data-model]', function (e) {
         bindings_internal_change.call(this, e, self, self.data('model'), schema);
     });
 
@@ -132,7 +129,6 @@ function bindings_internal_change(e, self, model, schema) {
         value_new = $.bindings._prepare.call(el, name, value, prepare, model, schema);
 
     var r = $.bindings._validation.call(el, name, value_new, model, schema);
-
     $.bindings.watch.call(el, r, name, value_new, model, schema);
 
     if (!r)
@@ -285,7 +281,6 @@ function bindings_get(path, schema) {
     return bindings_getvalue(model, path, schema);
 }
 
-
 function bindings_rebind_force(schema) {
     var self = this;
     var model = self.data('model');
@@ -336,6 +331,7 @@ function bindings_rebind(schema) {
         return self;
 
     var timeout = self.data('timeout_rebind') || null;
+
     if (timeout !== null)
         clearTimeout(timeout);
 
@@ -544,18 +540,17 @@ $.bindings._validation = function (path, value, model, schema) {
 };
 
 function bindings_setvalue(obj, path, value, schema) {
+
     path = path.split('.');
     var length = path.length;
     var current = obj;
 
     for (var i = 0; i < length - 1; i++) {
         current = bindings_findpipe(current, path[i]);
-        if (typeof(current) === 'undefined')
+        if (typeof (current) === 'undefined')
             return false;
     }
 
-    //console.log('OK');
-    //console.log(path[length - 1]);
     current = bindings_findpipe(current, path[length - 1], value);
     return true;
 }
@@ -580,14 +575,15 @@ function bindings_findpipe(current, name, value) {
     if (typeof (pipe) === 'undefined')
         return;
 
-    if (value) {
-        if (index !== -1) {
-            current[name][index] = value;
-            pipe = current[name][index];
-        } else {
-            current[name] = value;
-            pipe = current[name];
-        }
+    if (typeof(value) === 'undefined')
+        return pipe;
+
+    if (index !== -1) {
+        current[name][index] = value;
+        pipe = current[name][index];
+    } else {
+        current[name] = value;
+        pipe = current[name];
     }
 
     return pipe;
@@ -599,7 +595,7 @@ function bindings_getvalue(obj, path, schema) {
     var current = obj;
     for (var i = 0; i < path.length; i++) {
         current = bindings_findpipe(current, path[i]);
-        if (typeof(current) === 'undefined')
+        if (typeof (current) === 'undefined')
             return;
     }
     return current;
