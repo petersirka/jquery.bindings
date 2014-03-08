@@ -330,6 +330,14 @@ $('#form').on('model-validate', function(e, errorlist) {
 	errorlist[0].element;
 });
 
+// OR
+
+$('#form').on('validate', function(e, errorlist) {
+	errorlist[0].path;
+	errorlist[0].value;
+	errorlist[0].element;
+});
+
 $('#form').on('model-send-begin', function(e, url, model) {
 	// begin sending
 });
@@ -344,6 +352,12 @@ $('#form').on('model-send-error', function(e, status, url, model) {
 });
 
 $('#form').on('model-send', function(e, data, model) {
+	// Response data
+});
+
+// OR
+
+$('#form').on('send', function(e, data, model) {
 	// Response data
 });
 

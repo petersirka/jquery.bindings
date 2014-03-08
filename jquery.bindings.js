@@ -244,6 +244,8 @@ function bindings_validate(schema) {
         error.push({ path: path, value: value, element: self.find('input[data-model="' + path + '"],textarea[data-model="' + path + '"],select[data-model="' + path + '"]') });
     });
 
+    self.trigger('validate', [error, schema]);
+    self.trigger('validation', [error, schema]);
     self.trigger('model-validate', [error, schema]);
     self.trigger('model-validation', [error, schema]);
     return self;
@@ -471,6 +473,7 @@ function bindings_send(url, options, schema, callback) {
     options.success = function (data) {
         self.trigger('model-send-end', [url, model, schema]);
         delete jquerybindings_cache[key];
+        self.trigger('send', [data, model, schema]);
         self.trigger('model-send', [data, model, schema]);
         if (callback)
             callback(null, data);
