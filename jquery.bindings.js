@@ -104,7 +104,10 @@ function bindings_create(model, template, schema) {
     });
 
     bindings_refresh.call(self, schema);
-    self.trigger('model-create', [model, schema]);
+
+    bindings_delay(function() {
+        self.trigger('model-create', [model, schema]);
+    });
 
     return bindings_rebind.call(self);
 }
@@ -149,8 +152,11 @@ function bindings_internal_change(e, self, model, schema) {
 
     bindings_rebind.call(self, schema);
     self.data('isChange', true);
-    self.trigger('model-change', [name, value_new, model, schema, el]);
-    self.trigger('model-update', [model, name, schema]);
+
+    bindings_delay(function() {
+        self.trigger('model-change', [name, value_new, model, schema, el]);
+        self.trigger('model-update', [model, name, schema]);
+    });
 }
 
 function bindings_json(query, template, schema) {
@@ -228,7 +234,9 @@ function bindings_default() {
     self.data('model', $.extend({}, model));
     self.data('isChange', false);
     bindings_refresh.call(self, schema);
-    self.trigger('model-default', [model, schema]);
+    bindings_delay(function() {
+        self.trigger('model-default', [model, schema]);
+    });
     return self;
 }
 
@@ -655,4 +663,10 @@ function bindings_reflection(obj, fn, path) {
         if (type === 'object')
             bindings_reflection(obj[k], fn, current);
     }
+}
+
+function bindings_delay(fn) {
+    setTimeout(function() {
+        fn();
+    }, 120);
 }
