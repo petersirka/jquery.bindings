@@ -118,7 +118,9 @@ function bindings_internal_change(e, self, model, schema) {
     var type = el.attr('type');
     var value = el.val();
 
-    e.preventDefault();
+    if (!(/(MSIE\ [0-8]\.\d+)/.test(navigator.userAgent)))
+        e.preventDefault();
+
     e.stopPropagation();
     e.stopImmediatePropagation();
 
