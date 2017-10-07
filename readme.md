@@ -221,7 +221,7 @@ $('#form').bindings('change')(true);
 
 ## Delegates
 
-#### $.bindings.prepare(path, value, format, model, name)
+#### $.bindings.prepare(path, value, format, model, name)
 
 > Prepare current value from an INPUT to a MODEL. Always must return a value.
 
@@ -235,7 +235,7 @@ $.bindings.prepare = function(path, value, format, model, name) {
 };
 ```
 
-#### $.bindings.format(path, value, format, model)
+#### $.bindings.format(path, value, format, model)
 
 > Format current value from a MODEL to a HTML. Always must return a value.
 
@@ -257,7 +257,7 @@ $.bindings.format = function(path, value, format, model, name) {
 };
 ```
 
-#### $.bindings.custom(path, value, format, model, name)
+#### $.bindings.custom(path, value, format, model, name)
 
 > Format current value from a MODEL to HTML. Always must return a value.
 
@@ -275,7 +275,7 @@ $.bindings.custom = function(path, value, custom, model, name) {
 };
 ```
 
-#### $.bindings.validation(path, value, model, name)
+#### $.bindings.validation(path, value, model, name)
 
 > Validate current value to MODEL. Always must return Boolean.
 
@@ -291,7 +291,7 @@ $.bindings.validation = function(path, value, model, name) {
 };
 ```
 
-#### $.bindings.watch(isValid, path, value, model, name)
+#### $.bindings.watch(isValid, path, value, model, name)
 
 > Watch an element.
 
